@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/chat_room.py",
+      "src": "chat_room.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/chat_room.py"
+      "dest": "chat_room.py"
     }
   ]
 }
