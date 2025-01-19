@@ -1,4 +1,5 @@
-import flet as ft
+import flet as ft # type: ignore
+
 
 def main(page: ft.Page):
     page.title = "Chat"
