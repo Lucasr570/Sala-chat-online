@@ -4,9 +4,12 @@ def main(page: ft.Page):
     page.title = "Chat"
     page.vertical_alignment = "stretch" 
 
-    # Creamos un ListView para los mensajes con scroll automático
+    # ListView para los mensajes con scroll automático
     messages = ft.ListView(expand=True, auto_scroll=True)
-    
+
+    # Variable para almacenar el nombre del usuario
+    username = ""
+
     def on_message(msg):
         messages.controls.append(ft.Text(msg))
         messages.scroll_to(len(messages.controls) - 1)
@@ -15,29 +18,53 @@ def main(page: ft.Page):
     page.pubsub.subscribe(on_message)
     
     def send_click(e):
-        if message.value.strip():  # Evitamos enviar mensajes vacíos
-            page.pubsub.send_all(f"{user.value}: {message.value}")
+        nonlocal username
+        if message.value.strip():
+            # Se envía el mensaje usando el nombre almacenado
+            page.pubsub.send_all(f"{username}: {message.value}")
             message.value = ""
             page.update()
     
-    # Definimos los controles de entrada
-    user = ft.TextField(hint_text="Tu Nombre", width=150)
-    message = ft.TextField(hint_text="Tu Mensaje...", expand=True)
-    send = ft.ElevatedButton("Send", on_click=send_click)
+    def set_username(e):
+        nonlocal username
+        if username_field.value.strip():
+            username = username_field.value
+            username_dialog.open = False  
+            page.update()
+
+    # Diálogo para pedir el nombre una sola vez al inicio
+    username_field = ft.TextField(hint_text="Tu Nombre")
+    set_name_button = ft.ElevatedButton("Guardar", on_click=set_username)
+    username_dialog = ft.AlertDialog(
+        title=ft.Text("Ingresa tu nombre"),
+        content=ft.Column([username_field]),
+        actions=[set_name_button]
+    )
+    page.overlay.append(username_dialog)
+    username_dialog.open = True
+    page.update()
     
-    # Layout principal y la fila de entrada fija
+    # Control de entrada para el mensaje
+    message = ft.TextField(hint_text="Tu Mensaje...", expand=True)
+    send = ft.ElevatedButton("Enviar", on_click=send_click)
+    
+    input_controls = ft.Column(
+        controls=[message, send],
+        spacing=10
+    )
+    
     layout = ft.Column(
         controls=[
             ft.Container(
                 content=messages,
                 expand=True,
             ),
-            ft.Row(controls=[user, message, send])
+            input_controls
         ],
         expand=True
     )
     
     page.add(layout)
 
-# Punto de entrada 
+# Punto de entrada
 ft.app(target=main, view=ft.AppView.WEB_BROWSER)
